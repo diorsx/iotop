@@ -11,6 +11,19 @@
 
 #define HEADER_FORMAT "Total DISK READ: %7.2f %s | Total DISK WRITE: %7.2f %s"
 
+/* Add code by wood */
+#define HEADER_FORMAT_FOR_READ "%d:%d:%d %5i %-10.10s read %7.2f %-3.3s by %s\n"
+#define HEADER_FORMAT_FOR_WRITEN "%d:%d:%d %5i %-10.10s writen %7.2f %-3.3s by %s\n"
+
+/*Add code by wood */
+struct tm * get_currenttime(void)
+{
+    struct tm * lt;
+    time_t t = time(NULL);
+    lt = localtime (&t);
+    return lt;
+}
+
 struct xxxid_stats *findpid(struct xxxid_stats *chain, int tid)
 {
     struct xxxid_stats *s;
@@ -159,33 +172,35 @@ void view_batch(struct xxxid_stats *cs, struct xxxid_stats *ps)
     humanize_val(&total_read, &str_read);
     humanize_val(&total_write, &str_write);
 
-    printf(HEADER_FORMAT,
-           total_read,
-           str_read,
-           total_write,
-           str_write
-          );
-
-    if (config.f.timestamp)
+    if ( !(params.wbytes || params.rbytes) )
     {
-        time_t t = time(NULL);
-        printf(" | %s", ctime(&t));
+        printf(HEADER_FORMAT,
+            total_read,
+            str_read,
+            total_write,
+            str_write
+            );
+
+        if (config.f.timestamp)
+        {
+            time_t t = time(NULL);
+            printf(" | %s", ctime(&t));
+        }
+        else
+            printf("\n");
+
+        if (!config.f.quite)
+            printf("%5s %4s %8s %11s %11s %6s %6s %s\n",
+                    config.f.processes ? "PID" : "TID",
+                    "PRIO",
+                    "USER",
+                    "DISK READ",
+                    "DISK WRITE",
+                    "SWAPIN",
+                    "IO",
+                    "COMMAND"
+                );
     }
-    else
-        printf("\n");
-
-    if (!config.f.quite)
-        printf("%5s %4s %8s %11s %11s %6s %6s %s\n",
-               config.f.processes ? "PID" : "TID",
-               "PRIO",
-               "USER",
-               "DISK READ",
-               "DISK WRITE",
-               "SWAPIN",
-               "IO",
-               "COMMAND"
-              );
-
     for (s = diff; s; s = s->__next)
     {
         struct passwd *pwd = getpwuid(s->euid);
@@ -211,20 +226,53 @@ void view_batch(struct xxxid_stats *cs, struct xxxid_stats *ps)
             humanize_val(&write_val, &write_str);
         }
 
-        printf("%5i %4s %-10.10s %7.2f %-3.3s %7.2f %-3.3s %2.2f %% %2.2f %% %s\n",
-               s->tid,
-               str_ioprio(s->io_prio),
-               pwd ? pwd->pw_name : "UNKNOWN",
-               read_val,
-               read_str,
-               write_val,
-               write_str,
-               s->swapin_val,
-               s->blkio_val,
-               s->cmdline
-              );
+        /*Add by wood*/
+        if ( params.wbytes || params.rbytes )
+        {
+            struct tm * lt = get_currenttime();
+            if (params.wbytes && s->write_val > params.wbytes)
+            {
+                printf(HEADER_FORMAT_FOR_WRITEN,
+                       lt->tm_hour,
+                       lt->tm_min,
+                       lt->tm_sec,
+                       s->tid,
+                       pwd ? pwd->pw_name : "UNKNOWN",
+                       write_val,
+                       write_str,
+                       s->cmdline
+                      );
+            }
+            if (params.rbytes && s->read_val >params.rbytes)
+            {
+                printf(HEADER_FORMAT_FOR_READ,
+                       lt->tm_hour,
+                       lt->tm_min,
+                       lt->tm_sec,
+                       s->tid,
+                       pwd ? pwd->pw_name : "UNKNOWN",
+                       read_val,
+                       read_str,
+                       s->cmdline
+                      );
+            }
+        }
+        else
+        {
+            printf("%5i %4s %-10.10s %7.2f %-3.3s %7.2f %-3.3s %2.2f %% %2.2f %% %s\n",
+                   s->tid,
+                   str_ioprio(s->io_prio),
+                   pwd ? pwd->pw_name : "UNKNOWN",
+                   read_val,
+                   read_str,
+                   write_val,
+                   write_str,
+                   s->swapin_val,
+                   s->blkio_val,
+                   s->cmdline
+                 );
+         }
     }
-
     free(diff);
 }
 

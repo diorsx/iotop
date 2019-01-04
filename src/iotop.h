@@ -30,6 +30,8 @@ typedef struct
     int delay;
     int pid;
     int user_id;
+    int wbytes;
+    int rbytes;
 } params_t;
 
 extern config_t config;

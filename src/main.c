@@ -61,6 +61,8 @@ print_help(void)
         "  -d SEC, --delay=SEC   delay between iterations [1 second]\n"
         "  -p PID, --pid=PID     processes/threads to monitor [all]\n"
         "  -u USER, --user=USER  users to monitor [all]\n"
+        "  -w NUM, --wbytes=NUM  only show processes that wbps than the special num\n"
+        "  -r NUM, --rbytes=NUM  only show processes that rbps than the special num\n"
         "  -P, --processes       only show processes, not all threads\n"
         "  -a, --accumulated     show accumulated I/O instead of bandwidth\n"
         "  -k, --kilobytes       use kilobytes instead of a human friendly unit\n"
@@ -88,6 +90,8 @@ parse_args(int argc, char *argv[])
             {"delay",       required_argument, NULL, 'd'},
             {"pid",         required_argument, NULL, 'p'},
             {"user",        required_argument, NULL, 'u'},
+            {"wbytes",      required_argument, NULL, 'w'},
+            {"rbytes",      required_argument, NULL, 'r'},
             {"processes",   no_argument, NULL, 'P'},
             {"accumulated", no_argument, NULL, 'a'},
             {"kilobytes",   no_argument, NULL, 'k'},
@@ -127,6 +131,12 @@ parse_args(int argc, char *argv[])
             break;
         case 'p':
             params.pid = atoi(optarg);
+            break;
+        case 'w':
+            params.wbytes = atoi(optarg);
+            break;
+        case 'r':
+            params.rbytes = atoi(optarg);
             break;
         case 'u':
             if (isdigit(optarg[0]))
