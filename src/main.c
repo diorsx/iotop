@@ -100,7 +100,7 @@ parse_args(int argc, char *argv[])
             {NULL, 0, NULL, 0}
         };
 
-        int c = getopt_long(argc, argv, "vhbon:d:p:u:Paktq",
+        int c = getopt_long(argc, argv, "vhbon:d:p:u:w:r:Paktq",
                             long_options, NULL);
 
         if (c == -1)

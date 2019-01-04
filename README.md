@@ -40,6 +40,8 @@ Options
 -d SEC, --delay=SEC   delay between iterations [1 second]
 -p PID, --pid=PID     processes/threads to monitor [all]
 -u USER, --user=USER  users to monitor [all]
+-w NUM, --wbytes=NUM  only show processes that wbps than the special num"
+-r NUM, --rbytes=NUM  only show processes that rbps than the special num"
 -P, --processes       only show processes, not all threads
 -a, --accumulated     show accumulated I/O instead of bandwidth
 -k, --kilobytes       use kilobytes instead of a human friendly unit
